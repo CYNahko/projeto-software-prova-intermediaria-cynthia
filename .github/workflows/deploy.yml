@@ -21,37 +21,41 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
+          server-id: github
+          settings-path: ${{ github.workspace }}
 
       - name: Run tests with JaCoCo
-        run: mvn clean install
+        run: mvn clean verify
+
       - name: Check JaCoCo coverage
         uses: madrapps/jacoco-report@v1.7.2
         with:
-          paths: |
-            jacoco/jacoco.xml
-            token: ${{ secrets.GITHUB_TOKEN }}
-            min-coverage-overall: 80
-            min-coverage-changed-files: 80
-            fail-build: true
+          paths: jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 80
+          min-coverage-changed-files: 80
+          fail-build: true
           
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Build with Maven (sem testes)
+        run: mvn clean package -DskipTests
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: "cynthiayasutake"
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: cynthiayasutake/tarefa-ci:${{ github.sha }}
+          tags: cynthiayasutake/filme2-ci:${{ github.sha }}
+
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         with:
@@ -60,6 +64,6 @@ jobs:
           key: ${{ secrets.KEY_TEST }}
           port: 22
           script: |
-            docker stop filme2
-            docker rm --force filme2
+            docker stop filme2 || true
+            docker rm --force filme2 || true
             docker run -d -p 8080:8080 --name filme2 --network=rede cynthiayasutake/filme2-ci:${{ github.sha }}
