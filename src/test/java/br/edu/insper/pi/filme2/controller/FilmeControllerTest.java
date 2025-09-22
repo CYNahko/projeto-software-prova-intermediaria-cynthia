@@ -78,7 +78,7 @@ public class FilmeControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/filme")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(filmeRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // ou isCreated() se o controller tiver @ResponseStatus(HttpStatus.CREATED)
+                .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.tituloFilme").value("Inception"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.diretor").value("Nolan"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.dataCadastro").exists());
